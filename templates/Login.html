@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Dairy | Login</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="modal d-block">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content border-info">
+                <div class="modal-header d-block text-center">
+                    <h4 class="modal-title text-info font-italic">Daily Dairy</h4>
+                    <h5 class="modal-title">Login</h5>
+                </div>
+                <div class="modal-body">
+                    <form action="#" method="POST">
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="userName" name="userName" placeholder="Username" value="{{ userName }}">
+                            <small id="userNameMessage" class="form-text d-none"></small>
+                        </div>
+                        <div class="form-group">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+                            <small id="passwordMessage" class="form-text d-none"></small>
+                        </div>
+                        {% if error %}
+                            <small id="generalMessage" class="form-text text-danger mb-2">{{ error }}</small>
+                        {% endif %}
+                        <button type="submit" onclick="login(event)"  class="btn btn-success btn-block">Login</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <a href='/signup' class="btn btn-primary btn-block">Register</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script src="/static/js/Login.js"></script>
+</body>
+</html>

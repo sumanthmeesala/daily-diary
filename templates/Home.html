@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Daily Dairy - Home</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="text-info font-italic">Daily Dairy</h1>
+            <p class="text-secondary float-left">Nostaligia is powerful thing yet! So create them with Daily Dairy!!</p>
+        </div>
+        <div class="row">
+            <div class="col-3">
+                <div class="sticky-top pt-5">
+                    <div class="card">
+                        {% if user['profilePic'] %}
+                        <img id="_profilePic" class="card-img-top img img-fluid" src="{{ user['profilePic'] }}" alt="Profile Picture goes here! Maybe upload one!">
+                        {% else %}
+                        <img id="_profilePic" class="card-img-top img img-fluid" src="/static/images/defaultProfilePic.jpeg">
+                        {% endif %}
+                        <div class="card-body">
+                            <h5 id="_fullName" class="card-title text-info">{{ user['fullName'] }}</h5>
+                            {% if user['aboutMe'] %}
+                            <pre><p id="_aboutMe" class="card-text text-secondary">{{ user['aboutMe'] }}</p></pre>
+                            {% else %}
+                            <pre><p id="_aboutMe" class="card-text text-secondary"></p></pre>
+                            {% endif %}
+                        </div>
+                        <ul class="list-group list-group-flush text-center">
+                            <li class="list-group-item">
+                                <a href="#" id="viewProfile" class="card-link" data-toggle="modal" data-target="#profileModal">View Profile</a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="#" class="card-link" data-toggle="modal" data-target="#changePasswordModal">Change Password</a>
+                            </li>
+                            <li class="list-group-item">
+                                <a href="#" onclick="logout()" class="card-lin" data-toggle="modal" data-target="#logoutModal">Logout</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col pt-5">
+                <form class="clearfix" action="#" onsubmit="postDairy(event);">
+                    <div class="form-group">
+                        <label class="text-secondary">Write today's Dairy -</label>
+                        <input id="subject" class="form-control" placeholder="Subject (Ex: An fantastic day, etc...)">
+                    </div>
+                    <div class="form-group">
+                        <textarea id="text" class="form-control" rows="5" placeholder="Dear Dairy..."></textarea>
+                        <small id="postDairyGeneralMessage" class="form-text d-none"></small>
+                    </div>
+                    <button type="submit" class="btn btn-success float-right">Post Dairy</button>
+                </form>
+                <label class="text-secondary">Daily Dairies -</label>
+                <div id="dairies">
+                    {% if dairies['allDates']|length == 0 %}
+                    <p id="noDailyDairies" class="text-warning">You did not post a single dairy yet! How about we start today?!</p>
+                    {% else %}
+                        <button class="btn btn-primary btn-block mb-2" id="viewPostsModalBtn" data-toggle="modal" data-target="#viewPosts">View dairies by Date</button>
+                        {% for index, dairy in dairies['last3DaysDairies'].items() %}
+                        <div id="{{ index }}" class="border border-info mb-2 p-3">
+                            <h6 class="text-dark">Dairy posted on: <span class="text-info">{{ index }}</span></h6>
+                            {% for post in dairy %}
+                                <div class="card mb-1 border-muted">
+                                    <div class="card-body">
+                                        <div class="card-title text-info">{{ post['subject'] }}</div>
+                                        <div class="card-subtitle text-muted float-right">{{ post['postedOnDate'] }} {{ post['postedOnTime'] }}</div>
+                                        <div class="card-text">
+                                            <pre class="text-secondary">{{ post['text'] }}</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                            {% if dairy|length >=10 %}
+                            <button id="viewPostsFor_{{index}}" class="btn btn-secondary btn-block btn-sm">Load more for the day {{ index }}</button>
+                            <input id="_dateForviewPostsFor_{{index}}" type="hidden" value="{{index}}">
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="profileModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center text-info">
+                    <h5 class="modal-title">Profile Information</h5>
+                </div>
+                <div class="modal-body text-center p-0">
+                    <div class="card border-0">
+                        {% if user['profilePic'] %}
+                        <img id="profilePic" class="card-img-top border-0" src="{{ user['profilePic'] }}" alt="Profile Image" />
+                        {% else %}
+                        <img id="profilePic" class="card-img-top border-0" src="/static/images/defaultProfilePic.jpeg">
+                        {% endif %}
+                        <div class="card-img-overlay h-100 d-flex flex-column justify-content-end">
+                            {% if user['profilePic'] %}
+                            <a href="#" onclick="updateProfilePic('change')" class="btn btn-link">Change</a>
+                            <a href="#" onclick="updateProfilePic('delete')" class="btn btn-link text-danger">Delete</a>
+                            {% else %}
+                            <a href="#" onclick="updateProfilePic('upload')" class="btn btn-link text-dark">Upload</a>
+                            {% endif %}
+                            <input type="file" class="d-none" id="uploadProfilePic" accept="image/*">
+                        </div>
+                    </div>
+                    <form  class="form-horizontal ml-auto pr-3 pl-3">
+                        <div class="form-group mb-1 mt-2">
+                            <textarea id="aboutMe" class="form-control-plaintext" readonly rows="3" placeholder="Edit bio here.. Perhaps a quote or something!">{{ user['aboutMe'] if user['aboutMe'] }}</textarea>
+                        </div>
+                        <div class="form-group row mb-1">
+                            <label class="col-sm-3 col-form-label text-right text-secondary">Username</label>
+                            <div class="col">
+                                <input type="text" id="userName" readonly class="form-control-plaintext" value="{{ user['userName'] }}" placeholder="Username">
+                                <small id="editUserNameMessage" class="form-text d-none"></small>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                            <label class="col-sm-3 col-form-label text-right text-secondary">Full Name</label>
+                            <div class="col">
+                                <input type="text" id="fullName" readonly class="form-control-plaintext" value="{{ user['fullName'] }}" placeholder="Fullname">
+                                <small id="editFullNameMessage" class="form-text d-none"></small>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                            <label class="col-sm-3 col-form-label text-right text-secondary">Date of Birth</label>
+                            <div class="col">
+                                <input type="text" id="dob" readonly class="form-control-plaintext" value="{{ user['dateOfBirth'] if user['dateOfBirth'] }}" placeholder="DD-MM-YYYY">
+                                <small id="editDOBMessage" class="form-text d-none"></small>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                            <label class="col-sm-3 col-form-label text-right text-secondary">Email</label>
+                            <div class="col">
+                                <input type="text" id="email" readonly class="form-control-plaintext" value="{{ user['email'] if user['email'] }}" placeholder="Email">
+                                <small id="editEmailMessage" class="form-text d-none"></small>
+                            </div>
+                        </div>
+                        <div class="form-group row mb-1">
+                            <label class="col-sm-3 col-form-label text-right text-secondary">Mobile</label>
+                            <div class="col">
+                                <input type="text" id="mobile" readonly class="form-control-plaintext" value="{{ user['mobile'] if user['mobile'] }}" placeholder="Mobile">
+                                <small id="editMobileMessage" class="form-text d-none"></small>
+                            </div>
+                        </div>
+                        <small id="profileInfoMessage" class="d-none"></small>
+                    </form>
+                </div>
+                <div class="modal-footer mb-0">
+                    <button type="button" id="editChanges" onclick="editChanges()" class="btn btn-primary btn-block">Edit</button>
+                    <button type="button" id="cancelChanges" onclick="cancelChanges()" class="btn btn-secondary btn-block d-none">Cancel Changes</button>
+                    <button type="button" id="saveChanges" onclick="saveChanges()" class="btn btn-primary btn-block d-none">Save Changes</button>
+                </div>
+                <div class="modal-footer pt-0 border-0">
+                    <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <div class="modal fade" id="changePasswordModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center text-info">
+                    <h5 class="modal-title">Change Password</h5>
+                </div>
+                <div class="modal-body text-center">
+                    <form action="#" class="mb-0">
+                        <div class="form-group">
+                            <input class="form-control" type="password" id="oldPassword" placeholder="Old Password">
+                            <small id="oldPasswordMessage" class="form-text d-none"></small>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="password" id="newPassword" placeholder="New Password">
+                            <small id="newPasswordMessage" class="form-text d-none"></small>
+                        </div>
+                        <div class="form-group">
+                            <input class="form-control" type="password" id="confirmNewPassword" placeholder="Confirm New Password">
+                            <small id="confirmNewPasswordMessage" class="form-text d-none"></small>
+                        </div>
+                        <small id="changePasswordGeneralMessage" class="form-text d-none mb-2"></small>
+                        <button type="submit" onclick="changePassword(event)" class="btn btn-success btn-block">Change Password</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-block" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="logoutModal" data-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content">
+                <div class="modal-header d-block text-center border-0">
+                    <h5 class="modal-title text-info">See you again soon!</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="viewPosts">
+        <div class="modal-dialog modal-dialog-center modal-lg">
+            <div class="modal-content">
+                <div class="modal-header d-block">
+                    <div class="form-group border-bottom">
+                        <select id="selectDates" class="form-control">
+                            <option disabled selected>Select another date to view dairy</option>
+                            {% for date in dairies['allDates'] %}
+                            <option id="option_{{date}}" value="{{ date }}">{{ date }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-title" id="postsTitle"></div>
+                </div>
+                <div class="modal-body" id="posts"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
+    <script src="/static/js/Home.js"></script>
+</body>
+</html>
